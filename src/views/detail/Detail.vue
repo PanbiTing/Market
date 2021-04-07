@@ -1,15 +1,17 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav"/>
-    <scroll class="content" ref="scroll">
+    <detail-nav-bar class="detail-nav" @titleClick="titleClick"/>
+    <scroll class="content" 
+            ref="scroll"
+            :probe-type="3">
+      <!-- html不区分大小写 所以属性：topImages 传入值：top-images -->
       <detail-swiper :top-images="topImages" @DSimgLoad="DSimgLoad"/>
       <detail-base-info :goods="goods"/>
       <detail-shop-info :shop="shop"/>
       <detail-goods-info :detail-info="detailInfo" @imageLoad="imageLoad"/>
-      <detail-params-info :params-info="paramsInfo"/>
-      <detail-comment-info :commentInfo="commentInfo"></detail-comment-info>
-      <!-- <goods-list :goods="recommendList"></goods-list> -->
-      <!-- <detail-recommend-list :recommendList="recommendList"></detail-recommend-list> -->
+      <detail-params-info :param-info="paramInfo" ref="param"></detail-params-info>
+      <detail-comment-info :comment-info="commentInfo" ref="comment"></detail-comment-info>
+      <detail-recommend-list :recommend-list="recommendList" ref="recommend"></detail-recommend-list>
     </scroll>
   </div>
 </template>
@@ -23,7 +25,7 @@
   import DetailParamsInfo from './childComps/DetailParamsInfo'
   import DetailCommentInfo from './childComps/DetailCommentInfo'
   import DetailRecommendList from './childComps/DetailRecommendList'
-  import GoodsList from 'components/content/goods/GoodsList'
+
 
   import Scroll from 'components/common/scroll/Scroll'
 
@@ -42,8 +44,7 @@
       DetailParamsInfo,
       DetailCommentInfo,
       DetailRecommendList,
-      Scroll,
-      GoodsList,
+      Scroll
     },
     data() {
       return {
@@ -52,9 +53,12 @@
         goods: {},
         shop: {},
         detailInfo: {},
-        paramsInfo: {},
+        paramInfo: {},
         commentInfo: {},
-        recommendList: []
+        recommendList: [],
+        themeTopsY: [],
+        getTitleTopY: "",
+        currentIndex: 0
       }
     },
     created() {
@@ -78,7 +82,7 @@
         this.detailInfo = data.detailInfo;
 
         // 5.获取参数的信息
-        this.paramsInfo = new GoodsParam(data.itemParams.info, data.itemParams.rule)
+        this.paramInfo = new GoodsParam(data.itemParams.info, data.itemParams.rule)
 
         // 6.获取评论信息
         if(data.rate.list) {
@@ -90,14 +94,35 @@
       getRecommend().then((res) => {
         this.recommendList = res.data.list;
       })
+
+      // 获取不同组件的offsetTop,进行防抖，在渲染完成后获取
+      this.getTitleTopY = debounce(() => {
+        this.$nextTick(() => {
+          this.themeTopsY.push(0);
+          this.themeTopsY.push(this.$refs.param.$el.offsetTop-44);
+          this.themeTopsY.push(this.$refs.comment.$el.offsetTop-44);
+          this.themeTopsY.push(this.$refs.recommend.$el.offsetTop-44);
+          console.log(this.themeTopsY);
+        })
+      },50)
+    },
+    mounted() {
+      const refresh = debounce(this.$refs.scroll.refresh,50);
+      this.$bus.$on('goodsimgload', () => {
+        refresh();
+      })
     },
     methods: {
       imageLoad() {
         this.$refs.scroll.refresh()
+        this.getTitleTopY();
       },
       DSimgLoad() {
         const newrefrash = debounce(this.$refs.scroll.refresh,50);
         newrefrash();
+      },
+      titleClick(index) {
+        this.$refs.scroll.scrollTo(0,-this.themeTopsY[index],200);
       }
     }
   }
@@ -118,6 +143,7 @@
   }
 
   .content {
+    overflow: hidden;
     height: calc(100% - 44px);
   }
 </style>

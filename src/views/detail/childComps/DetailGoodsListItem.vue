@@ -1,6 +1,6 @@
 <template>
-  <div class="goods-item" @click="itemClick">
-    <img :src="goodsItem.show.img" alt="" @load="imageLoad">
+  <div class="detail-goods-item" >
+    <img :src="goodsItem.image" alt="" @load="goodsimgload">
     <div class="goods-info">
       <p>{{goodsItem.title}}</p>
       <span class="price">{{goodsItem.price}}</span>
@@ -11,7 +11,7 @@
 
 <script>
 export default {
-  name: "GoodsListItem",
+  name: "DetailGoodsListItem",
   props: {
     goodsItem: {
       type: Object,
@@ -21,26 +21,22 @@ export default {
     }
   },
   methods: {
-    imageLoad() {
-      // 事件总线发射事件
-      this.$bus.$emit('itemImageLoad')
-    },
-    itemClick() {
-      this.$router.push('/detail/' + this.goodsItem.iid)
-    },
+    goodsimgload() {
+      this.$bus.$emit('goodsimgload');
+    }
   }
 }
 </script>
 
 <style scoped>
 /* 子绝父相 */
-.goods-item {
+.detail-goods-item {
   padding-bottom: 40px;
   position: relative;
   width: 48%;
 }
 
-.goods-item img {
+.detail-goods-item img {
   width: 100%;
   border-radius: 5px;
 }

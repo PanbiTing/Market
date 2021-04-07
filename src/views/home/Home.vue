@@ -183,6 +183,7 @@
   .tab-control {
     position: relative;
     z-index: 9;
+    top:-1px;
   }
 
   .content {
