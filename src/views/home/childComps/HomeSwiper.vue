@@ -33,6 +33,7 @@ export default {
     imageLoad() {
       // 只获取一个值
       if(!this.isLoad){
+        // 轮播图加载完毕后获取tabControl的offsetTop
         this.$emit('swiperImageLoad');
         this.isLoad = true;
       }

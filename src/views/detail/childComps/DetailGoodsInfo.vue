@@ -31,9 +31,10 @@ export default {
   },
   methods: {
     imageLoad() {
+      this.$bus.$emit('goodsimgload');
       // 判断所有图片加载完，进行一次回调
       if(++this.counter === this.imagesLength) {
-        this.$emit('imageLoad')
+        this.$emit('imgload');
       }
     }
   },

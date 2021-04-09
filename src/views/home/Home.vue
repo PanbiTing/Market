@@ -37,10 +37,10 @@
   import Scroll from 'components/common/scroll/Scroll'
   import TabControl from 'components/content/tabcontrol/TabControl'
   import GoodsList from 'components/content/goods/GoodsList'
-  import BackTop from 'components/content/backtop/BackTop'
 
   import {getHomeMultidata, getHomeGoods} from "network/home";
   import {debounce} from 'common/utils'
+  import {backTopMixin} from 'common/mixin'
 
   export default {
     name: "Home",
@@ -52,8 +52,8 @@
       TabControl,
       GoodsList,
       Scroll,
-      BackTop
     },
+    mixins: [backTopMixin],
     data() {
       return {
         banners: [],
@@ -64,12 +64,10 @@
           'sell': {page: 0, list: []}
         },
         currentType: 'pop',
-        isShowBackTop: false,
         tabOffsetTop: 0,
         isTabFixed: false
       }
     },
-   
     created() {
       // 1.请求多个数据
       this.getHomeMultidata()
@@ -106,10 +104,7 @@
         this.$refs.tabControl1.currentIndex = index;
         this.$refs.tabControl2.currentIndex = index;
       },
-      // 返回顶部
-      backClick() {
-        this.$refs.scroll.scrollTo(0,0)
-      },
+      
       // 返回类型顶部
       tabBackClick() {
         this.$refs.scroll.scrollTo(0,-this.tabOffsetTop,0)
@@ -130,7 +125,6 @@
         // 所有的组件都有一个属性$el：用于获取组件中的元素
         this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop;
       },
-      
 
       /** 网络请求相关方法 **/
       getHomeMultidata() {

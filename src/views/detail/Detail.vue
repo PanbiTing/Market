@@ -1,18 +1,21 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav" @titleClick="titleClick"/>
+    <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="navbar"/>
     <scroll class="content" 
             ref="scroll"
-            :probe-type="3">
+            :probe-type="3"
+            @scroll="contentScroll">
       <!-- html不区分大小写 所以属性：topImages 传入值：top-images -->
-      <detail-swiper :top-images="topImages" @DSimgLoad="DSimgLoad"/>
+      <detail-swiper :top-images="topImages" ref="swiper"/>
       <detail-base-info :goods="goods"/>
       <detail-shop-info :shop="shop"/>
-      <detail-goods-info :detail-info="detailInfo" @imageLoad="imageLoad"/>
+      <detail-goods-info :detail-info="detailInfo" @imgload="imgload"/>
       <detail-params-info :param-info="paramInfo" ref="param"></detail-params-info>
       <detail-comment-info :comment-info="commentInfo" ref="comment"></detail-comment-info>
       <detail-recommend-list :recommend-list="recommendList" ref="recommend"></detail-recommend-list>
     </scroll>
+    <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
+    <detail-bottom-bar @addToCart="addToCart"></detail-bottom-bar>
   </div>
 </template>
 
@@ -25,12 +28,13 @@
   import DetailParamsInfo from './childComps/DetailParamsInfo'
   import DetailCommentInfo from './childComps/DetailCommentInfo'
   import DetailRecommendList from './childComps/DetailRecommendList'
-
+  import DetailBottomBar from './childComps/DetailBottomBar'
 
   import Scroll from 'components/common/scroll/Scroll'
 
-  import {getDetail, Goods, Shop, GoodsParam, getRecommend} from "network/detail";
+  import {getDetail, Goods, Shop, GoodsParam, getRecommend} from "network/detail"
   import {debounce} from 'common/utils'
+  import {backTopMixin} from 'common/mixin'
 
 
   export default {
@@ -44,8 +48,10 @@
       DetailParamsInfo,
       DetailCommentInfo,
       DetailRecommendList,
-      Scroll
+      Scroll,
+      DetailBottomBar
     },
+    mixins: [backTopMixin],
     data() {
       return {
         iid: null,
@@ -86,43 +92,72 @@
 
         // 6.获取评论信息
         if(data.rate.list) {
-          this.commentInfo = data.rate.list[0];
+          this.commentInfo = data.rate.list[0]
         }
       })
 
-      // 保存推荐信息
+      // 3.保存推荐信息
       getRecommend().then((res) => {
-        this.recommendList = res.data.list;
+        this.recommendList = res.data.list
       })
 
-      // 获取不同组件的offsetTop,进行防抖，在渲染完成后获取
-      this.getTitleTopY = debounce(() => {
+      // 4.获取不同组件的offsetTop,进行防抖，在渲染完成后获取
+      this.getTitleTopsY = debounce(() => {
         this.$nextTick(() => {
-          this.themeTopsY.push(0);
-          this.themeTopsY.push(this.$refs.param.$el.offsetTop-44);
-          this.themeTopsY.push(this.$refs.comment.$el.offsetTop-44);
-          this.themeTopsY.push(this.$refs.recommend.$el.offsetTop-44);
-          console.log(this.themeTopsY);
+          this.themeTopsY.push(0)
+          this.themeTopsY.push(this.$refs.param.$el.offsetTop-44)
+          this.themeTopsY.push(this.$refs.comment.$el.offsetTop-44)
+          this.themeTopsY.push(this.$refs.recommend.$el.offsetTop-44)
+          this.themeTopsY.push(Number.MAX_VALUE)
+          console.log(this.themeTopsY)
         })
       },50)
     },
     mounted() {
-      const refresh = debounce(this.$refs.scroll.refresh,50);
+      // 解决better-scroll滑动问题，每次加载完图片refresh
+      const refresh = debounce(this.$refs.scroll.refresh,50)
       this.$bus.$on('goodsimgload', () => {
         refresh();
       })
     },
     methods: {
-      imageLoad() {
-        this.$refs.scroll.refresh()
-        this.getTitleTopY();
-      },
-      DSimgLoad() {
-        const newrefrash = debounce(this.$refs.scroll.refresh,50);
-        newrefrash();
-      },
+      // 点击滑动到相应的主题
       titleClick(index) {
-        this.$refs.scroll.scrollTo(0,-this.themeTopsY[index],200);
+        this.$refs.scroll.scrollTo(0,-this.themeTopsY[index],200)
+      },
+      // 获取主题y值
+      imgload() {
+        this.getTitleTopsY()
+      },
+      // 滑动导航栏变化
+      contentScroll(position) {
+        // 1.判断BackTop是否显示
+        this.isShowBackTop = (-position.y) > 1000;
+
+        // 2.获取y值
+        const positionY = -position.y
+        const length = this.themeTopsY.length
+        // 3.positionY和详情页主题值比较
+        for(let i = 0; i < length-1; i++) {
+          if(positionY >= this.themeTopsY[i] && positionY < this.themeTopsY[i+1]){
+            if(this.currentIndex !== i){
+              this.currentIndex = i
+            }
+            break;
+          }
+        }
+        this.$refs.navbar.currentIndex = this.currentIndex
+      },
+      addToCart() {
+        // 1.获取购物车要展示的信息
+        const puduct = {}
+        product.iid = this.iid
+        product.image = this.topImages[0]
+        product.title = this.goods.title
+        product.desc = this.goods.desc
+        product.newPrice = this.goods.newPrice
+        // 2.添加到Store中
+        
       }
     }
   }
@@ -143,7 +178,6 @@
   }
 
   .content {
-    overflow: hidden;
-    height: calc(100% - 44px);
+    height: calc(100% - 44px - 58px);
   }
 </style>

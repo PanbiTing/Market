@@ -30,7 +30,7 @@ export default {
 
 <style scoped>
 .recommend-list {
-  padding: 5px 12px;
+  padding: 5px 8px;
   color: #333;
 }
 .list-header {
