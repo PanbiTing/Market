@@ -150,14 +150,14 @@
       },
       addToCart() {
         // 1.获取购物车要展示的信息
-        const puduct = {}
+        const product = {}
         product.iid = this.iid
         product.image = this.topImages[0]
         product.title = this.goods.title
         product.desc = this.goods.desc
         product.newPrice = this.goods.newPrice
         // 2.添加到Store中
-        
+        this.$store.commit('addCart', product)
       }
     }
   }
