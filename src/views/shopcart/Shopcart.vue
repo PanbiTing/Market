@@ -1,7 +1,7 @@
 <template>
   <div id="cart">
     <nav-bar class="cart-nav">
-      <div slot="center">购物车</div>
+      <div slot="center">购物车({{cartList.length}})</div>
     </nav-bar>
     <cart-list class="cart-list" :cart-list="cartList"></cart-list>
     <bottom-bar></bottom-bar>
@@ -40,9 +40,9 @@ export default {
   }
 
   .cart-nav {
-    background-color: var(--color-tint);
-    font-weight: 700;
     color: #fff;
+    background: var(--color-tint);
+    font-size: 18px;
   }
 
   .cart-list {

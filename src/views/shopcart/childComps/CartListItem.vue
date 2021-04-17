@@ -11,7 +11,11 @@
       <div class="item-desc">商品描述: {{itemInfo.desc}}</div>
       <div class="info-bottom">
         <div class="item-price left">{{itemInfo.newPrice}}</div>
-        <div class="item-count right" @click="addbtnClick">x{{itemInfo.count}}</div>
+        <div class="item-count right">
+          <div @click="addbtnClick">+</div>
+          <div>{{itemInfo.count}}</div>
+          <div @click="subbtnClick">-</div>
+        </div>
       </div>
     </div>
   </div>
@@ -33,6 +37,12 @@ export default {
     },
     addbtnClick() {
       this.itemInfo.count++
+    },
+    subbtnClick() {
+      this.itemInfo.count--
+      if(this.itemInfo.count <= 0){
+        this.$store.commit('deleteCart',this.itemInfo)
+      }
     }
   }
 }
@@ -84,6 +94,13 @@ export default {
     font-size: 14px;
     color: #666;
     margin-top: 15px;
+  }
+
+  .item-count {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    width: 40px;
   }
 
   .info-bottom {
